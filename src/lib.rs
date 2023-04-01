@@ -70,6 +70,30 @@ impl Universe {
         }
     }
 
+    pub fn new_spaceship() -> Universe {
+        let width = 64;
+        let height = 64;
+
+        let mut cells: Vec<Cell> = (0..width * height).map(|_| Cell::Dead).collect();
+
+        // Glider
+        // . 1 .
+        // . . 1
+        // 1 1 1
+        let spaceship = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)];
+
+        for (row, col) in spaceship.iter().cloned() {
+            let idx = row * width + col;
+            cells[idx as usize] = Cell::Alive;
+        }
+
+        Universe {
+            width,
+            height,
+            cells,
+        }
+    }
+
     pub fn width(&self) -> u32 {
         return self.width;
     }
