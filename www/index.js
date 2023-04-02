@@ -6,6 +6,7 @@ const GRID_COLOR = "#cccccc";
 const ALIVE_COLOR = "#000000";
 const DEAD_COLOR = "#FFFFFF";
 
+// const universe = Universe.new_random();
 // const universe = Universe.new_spaceship();
 const universe = Universe.new();
 const width = universe.width();
@@ -39,9 +40,15 @@ const getIndex = (row, column) => {
   return row * width + column;
 };
 
+const bitIsSet = (n, byteArray) => {
+  const byte = Math.floor(n / 8);
+  const mask = 1 << n % 8;
+  return (byteArray[byte] & mask) === mask;
+};
+
 const drawCells = () => {
   const cellsPtr = universe.cells();
-  const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
+  const cells = new Uint8Array(memory.buffer, cellsPtr, (width * height) / 8);
 
   ctx.beginPath();
 
@@ -49,7 +56,7 @@ const drawCells = () => {
     for (let col = 0; col < width; col++) {
       const idx = getIndex(row, col);
 
-      ctx.fillStyle = cells[idx] === Cell.Dead ? DEAD_COLOR : ALIVE_COLOR;
+      ctx.fillStyle = bitIsSet(idx, cells) ? ALIVE_COLOR : DEAD_COLOR;
 
       ctx.fillRect(
         col * (CELL_SIZE + 1) + 1,
