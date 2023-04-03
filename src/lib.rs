@@ -5,6 +5,15 @@ use js_sys::Math;
 use std::fmt;
 use wasm_bindgen::prelude::*;
 
+extern crate web_sys;
+
+#[allow(unused_macros)]
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -29,6 +38,12 @@ pub struct Universe {
 impl Universe {
     fn get_index(&self, row: u32, column: u32) -> usize {
         (row * self.width + column) as usize
+    }
+
+    fn get_pos(&self, index: usize) -> (u32, u32) {
+        let row = index as u32 / self.width;
+        let col = index as u32 % self.width;
+        (row, col)
     }
 
     fn live_neighbor_count(&self, row: u32, column: u32) -> u8 {
@@ -63,6 +78,8 @@ impl Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new() -> Universe {
+        utils::set_panic_hook();
+
         let width = 64;
         let height = 64;
 
@@ -180,13 +197,22 @@ impl Universe {
                     idx,
                     match (cell, live_neighbors) {
                         // Any live cell with < 2 neighbors dies
-                        (true, x) if x < 2 => false,
+                        (true, x) if x < 2 => {
+                            log!("{:?} dies to loneliness", self.get_pos(idx));
+                            false
+                        }
                         // Any live cell with 2-3 neighbors survives
                         (true, 2) | (true, 3) => true,
                         // Any live cell with > 3 neighbors dies
-                        (true, x) if x > 3 => false,
+                        (true, x) if x > 3 => {
+                            log!("{:?} dies to overcrowding", self.get_pos(idx));
+                            false
+                        }
                         // Any dead cell with 3 neighbors becomes live
-                        (false, 3) => true,
+                        (false, 3) => {
+                            log!("{:?} becomes live", self.get_pos(idx));
+                            true
+                        }
                         // Retain same state
                         (orig, _) => orig,
                     },
