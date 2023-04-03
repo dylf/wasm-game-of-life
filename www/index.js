@@ -70,14 +70,44 @@ const drawCells = () => {
   ctx.stroke();
 };
 
+let animationId = null;
+
 const renderLoop = () => {
   // debugger;
   universe.tick();
-
   drawGrid();
   drawCells();
 
-  requestAnimationFrame(renderLoop);
+  animationId = requestAnimationFrame(renderLoop);
 };
 
 requestAnimationFrame(renderLoop);
+
+/**
+ *  Add interactivity with pause/play.
+ */
+
+const isPaused = () => {
+  return animationId === null;
+};
+
+const playPauseButton = document.getElementById("play-pause");
+
+const play = () => {
+  playPauseButton.textContent = "⏸";
+  renderLoop();
+};
+
+const pause = () => {
+  playPauseButton.textContent = "▶";
+  cancelAnimationFrame(animationId);
+  animationId = null;
+};
+
+playPauseButton.addEventListener("click", (event) => {
+  if (isPaused()) {
+    play();
+  } else {
+    pause();
+  }
+});
