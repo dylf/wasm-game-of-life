@@ -222,6 +222,19 @@ impl Universe {
 
         self.cells = next;
     }
+
+    pub fn toggle_cell(&mut self, row: u32, column: u32) {
+        let idx = self.get_index(row, column);
+        self.cells.set(idx, !self.cells[idx]);
+    }
+
+    pub fn clear_cells(&mut self) {
+        let size = (self.width * self.height) as usize;
+        for i in 0..size {
+            self.cells.set(i, false);
+        }
+    }
+
 }
 
 impl fmt::Display for Universe {

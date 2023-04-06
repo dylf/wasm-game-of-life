@@ -6,9 +6,8 @@ const GRID_COLOR = "#cccccc";
 const ALIVE_COLOR = "#000000";
 const DEAD_COLOR = "#FFFFFF";
 
-// const universe = Universe.new_random();
 // const universe = Universe.new_spaceship();
-const universe = Universe.new();
+let universe = Universe.new();
 const width = universe.width();
 const height = universe.height();
 
@@ -72,16 +71,18 @@ const drawCells = () => {
 
 let animationId = null;
 
+const ticksPerFrame = document.getElementById("ticks-per-frame");
+
 const renderLoop = () => {
   // debugger;
-  universe.tick();
+  for (let i = 0; i < ticksPerFrame.value; i++) {
+    universe.tick();
+  }
   drawGrid();
   drawCells();
 
   animationId = requestAnimationFrame(renderLoop);
 };
-
-requestAnimationFrame(renderLoop);
 
 /**
  *  Add interactivity with pause/play.
@@ -104,10 +105,48 @@ const pause = () => {
   animationId = null;
 };
 
-playPauseButton.addEventListener("click", (event) => {
+playPauseButton.addEventListener("click", (_event) => {
   if (isPaused()) {
     play();
   } else {
     pause();
   }
 });
+
+// Allow clicking on cells to toggle them
+canvas.addEventListener("click", (event) => {
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+  universe.toggle_cell(row, col);
+
+  drawGrid();
+  drawCells();
+});
+
+const randomizeButton = document.getElementById("randomize");
+
+randomizeButton.addEventListener("click", (_event) => {
+  universe = Universe.new_random();
+  drawGrid();
+  drawCells();
+});
+
+const resetButton = document.getElementById("reset-universe");
+
+resetButton.addEventListener("click", () => {
+  universe.clear_cells();
+  drawGrid();
+  drawCells();
+});
+
+// Initialize with play()
+play();
