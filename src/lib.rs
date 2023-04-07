@@ -33,6 +33,7 @@ pub struct Universe {
     width: u32,
     height: u32,
     cells: FixedBitSet,
+    debug: bool,
 }
 
 impl Universe {
@@ -94,6 +95,7 @@ impl Universe {
             width,
             height,
             cells,
+            debug: false,
         }
     }
 
@@ -123,6 +125,7 @@ impl Universe {
             width,
             height,
             cells,
+            debug: false,
         }
     }
 
@@ -141,6 +144,7 @@ impl Universe {
             width,
             height,
             cells,
+            debug: false,
         }
     }
 
@@ -198,19 +202,25 @@ impl Universe {
                     match (cell, live_neighbors) {
                         // Any live cell with < 2 neighbors dies
                         (true, x) if x < 2 => {
-                            log!("{:?} dies to loneliness", self.get_pos(idx));
+                            if self.debug {
+                                log!("{:?} dies to loneliness", self.get_pos(idx));
+                            }
                             false
                         }
                         // Any live cell with 2-3 neighbors survives
                         (true, 2) | (true, 3) => true,
                         // Any live cell with > 3 neighbors dies
                         (true, x) if x > 3 => {
-                            log!("{:?} dies to overcrowding", self.get_pos(idx));
+                            if self.debug {
+                                log!("{:?} dies to overcrowding", self.get_pos(idx));
+                            }
                             false
                         }
                         // Any dead cell with 3 neighbors becomes live
                         (false, 3) => {
-                            log!("{:?} becomes live", self.get_pos(idx));
+                            if self.debug {
+                                log!("{:?} becomes live", self.get_pos(idx));
+                            }
                             true
                         }
                         // Retain same state
@@ -235,6 +245,90 @@ impl Universe {
         }
     }
 
+    pub fn add_glider_at_point(&mut self, row: u32, column: u32) {
+        let glider = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)];
+
+        for (delta_row, delta_col) in glider.iter().cloned() {
+            let target_row = (row + delta_row) % self.height;
+            let target_col = (column + delta_col) % self.width;
+            let idx = target_row * self.width + target_col;
+            self.cells.set(idx as usize, true);
+        }
+    }
+
+    pub fn add_pulsar_at_point(&mut self, row: u32, column: u32) {
+        // TODO: Would programatically creating the mirrored quadrants
+        // actually be simpler than defining every point? Maybe
+        let pulsar = [
+            (0, 4),
+            (0, 10),
+            (1, 4),
+            (1, 10),
+            (2, 4),
+            (2, 5),
+            (2, 9),
+            (2, 10),
+            (4, 0),
+            (4, 1),
+            (4, 2),
+            (4, 5),
+            (4, 6),
+            (4, 8),
+            (4, 9),
+            (4, 12),
+            (4, 13),
+            (4, 14),
+            (5, 2),
+            (5, 4),
+            (5, 6),
+            (5, 8),
+            (5, 10),
+            (5, 12),
+            (6, 4),
+            (6, 5),
+            (6, 9),
+            (6, 10),
+            (8, 4),
+            (8, 5),
+            (8, 9),
+            (8, 10),
+            (9, 2),
+            (9, 4),
+            (9, 6),
+            (9, 8),
+            (9, 10),
+            (9, 12),
+            (10, 0),
+            (10, 1),
+            (10, 2),
+            (10, 5),
+            (10, 6),
+            (10, 8),
+            (10, 9),
+            (10, 12),
+            (10, 13),
+            (10, 14),
+            (12, 4),
+            (12, 5),
+            (12, 9),
+            (12, 10),
+            (13, 4),
+            (13, 10),
+            (14, 4),
+            (14, 10),
+        ];
+
+        for (delta_row, delta_col) in pulsar.iter().cloned() {
+            let target_row = (row + delta_row) % self.height;
+            let target_col = (column + delta_col) % self.width;
+            let idx = target_row * self.width + target_col;
+            self.cells.set(idx as usize, true);
+        }
+    }
+
+    pub fn set_debug(&mut self, debug: bool) {
+        self.debug = debug;
+    }
 }
 
 impl fmt::Display for Universe {

@@ -126,7 +126,13 @@ canvas.addEventListener("click", (event) => {
   const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
   const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
 
-  universe.toggle_cell(row, col);
+  if (event.ctrlKey) {
+    universe.add_glider_at_point(row, col);
+  } else if (event.shiftKey) {
+    universe.add_pulsar_at_point(row, col);
+  } else {
+    universe.toggle_cell(row, col);
+  }
 
   drawGrid();
   drawCells();
@@ -146,6 +152,14 @@ resetButton.addEventListener("click", () => {
   universe.clear_cells();
   drawGrid();
   drawCells();
+});
+
+// Add debug toggle
+let debug = false;
+const debugButton = document.getElementById("toggle-debug");
+debugButton.addEventListener("click", () => {
+  debug = !debug;
+  universe.set_debug(debug);
 });
 
 // Initialize with play()
